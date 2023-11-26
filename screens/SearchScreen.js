@@ -5,7 +5,6 @@ import AppContext from '../components/AppContext.js';
 import { useState, useContext } from 'react';
 import MyButton from '../components/MyButton.js';
 import MyInput from '../components/MyInput.js';
-import { Dropdown } from 'react-native-element-dropdown';
 import MyDropdown from '../components/MyDropdown.js';
 import { searchDests } from '../components/Backend.js';
 

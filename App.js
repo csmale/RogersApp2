@@ -4,18 +4,78 @@ import StartScreen from './screens/StartScreen';
 import MainScreen from './screens/MainScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, { useState } from 'react';
 import AppContext from './components/AppContext';
 import VehicleListScreen from './screens/VehicleListScreen';
 import SignupScreen from './screens/SignupScreen';
+import SignupThanksScreen from './screens/SignupThanksScreen';
 import SearchScreen from './screens/SearchScreen';
 import ResultsScreen from './screens/ResultsScreen';
 import DestDetailsScreen from './screens/DestDetailsScreen';
 import EditDestScreen from './screens/EditDestScreen';
 import NavigateScreen from './screens/NavigateScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+
+function StackNavigator() {
+  return (
+    /* Define your stack screens */
+    <Stack.Navigator screenOptions={{
+      headerShown: true,
+    }}>
+      <Stack.Screen name="Main" component={MainScreen} />
+      <Stack.Screen name="Search" component={SearchScreen} />
+      <Stack.Screen name="Results" component={ResultsScreen} />
+      <Stack.Screen name="DestDetails" component={DestDetailsScreen} />
+      <Stack.Screen name="EditDest" component={EditDestScreen} />
+      <Stack.Screen name="Navigate" component={NavigateScreen} />
+      <Stack.Screen name="VehicleList" component={VehicleListScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function TabNavigator() {
+  return (
+    /* Define your tab screens */
+    < Tab.Navigator
+      initialRouteName='MainStack' ///the name of the initial screen
+      screenOptions={{
+        headerShown: false,
+      }
+      }>
+      <Tab.Screen name="MainStack" component={StackNavigator} options={{
+        tabBarLabel: 'Home',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="home" color={color} size={size} />
+        ),
+      }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{
+        tabBarLabel: 'Settings',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="settings" color={color} size={size} />
+        ),
+      }} />
+    </Tab.Navigator >
+  );
+}
+
+function RootNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{
+      headerShown: false,
+    }}>
+      <Stack.Screen name="Start" component={StartScreen} />
+      <Stack.Screen name="MainNav" component={TabNavigator} />
+      <Stack.Screen name="Signup" component={SignupScreen} />
+      <Stack.Screen name="SignupThanks" component={SignupThanksScreen} />
+    </Stack.Navigator>
+  )
+}
 
 export default function App() {
   const [Profile, setProfile] = useState({});
@@ -56,22 +116,7 @@ export default function App() {
   return (
     <AppContext.Provider value={userSettings}>
       <NavigationContainer>
-        <Tab.Navigator
-          initialRouteName='Start' ///the name of the initial screen
-          screenOptions={{
-            headerShown: false,
-          }}>
-          <Tab.Screen name="Start" component={StartScreen} />
-          <Tab.Screen name="Main" component={MainScreen} />
-          <Tab.Screen name="Search" component={SearchScreen} />
-          <Tab.Screen name="Settings" component={SettingsScreen} />
-          <Tab.Screen name="VehicleList" component={VehicleListScreen} />
-          <Tab.Screen name="Signup" component={SignupScreen} />
-          <Tab.Screen name="Results" component={ResultsScreen} />
-          <Tab.Screen name="DestDetails" component={DestDetailsScreen} />
-          <Tab.Screen name="EditDest" component={EditDestScreen} />
-          <Tab.Screen name="Navigate" component={NavigateScreen} />
-        </Tab.Navigator>
+        <RootNavigator />
       </NavigationContainer>
     </AppContext.Provider>
   );

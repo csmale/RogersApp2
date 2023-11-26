@@ -39,7 +39,7 @@ export default function StartScreen(props) {
                   } catch (e) {
                     // saving error
                   }
-                navigation.navigate('Main');
+                navigation.navigate('MainNav');
             }
         })();
     }
