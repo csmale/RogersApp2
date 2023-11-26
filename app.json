@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "RogersApp",
-    "slug": "RogersApp",
-    "version": "1.0.0",
+    "name": "GateMaster",
+    "slug": "GateMaster",
+    "version": "0.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./images/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -15,16 +15,31 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.colinsmale.gatemaster"
     },
     "android": {
+      "package": "com.colinsmale.gatemaster",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBqJGt51YpttKhVRATWqAR7Il4MjrzhwS8"
+        }
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "extra": {
+      "web": {
+        "favicon": "./assets/favicon.png"
+      },
+      "eas": {
+        "projectId": "8055e536-b18b-4b04-8e3b-dc10db188d44"
+      }
     }
   }
 }
