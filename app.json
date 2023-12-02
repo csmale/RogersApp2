@@ -21,7 +21,7 @@
     "android": {
       "package": "com.colinsmale.gatemaster",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -35,7 +35,7 @@
     },
     "extra": {
       "web": {
-        "favicon": "./assets/favicon.png"
+        "favicon": "./images/favicon.png"
       },
       "eas": {
         "projectId": "8055e536-b18b-4b04-8e3b-dc10db188d44"

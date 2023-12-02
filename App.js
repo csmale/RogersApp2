@@ -17,6 +17,7 @@ import DestDetailsScreen from './screens/DestDetailsScreen';
 import EditDestScreen from './screens/EditDestScreen';
 import NavigateScreen from './screens/NavigateScreen';
 import { Ionicons } from '@expo/vector-icons';
+import { useKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -112,6 +113,10 @@ export default function App() {
     SelectedSite, setSelectedSite,
     SelectedUnit, setSelectedUnit,
   };
+
+  useKeepAwake();
+  deactivateKeepAwake();
+
   /* </AppContext.Provider>  */
   return (
     <AppContext.Provider value={userSettings}>

@@ -23,7 +23,7 @@ async function getStatus() {
 async function getUser(uid) {
     const configurationObject = {
         method: 'get',
-        url: `${baseUrl}/user/${uid}`,
+        url: `${baseUrl}/users/${uid}`,
     };
     const response = await axios(configurationObject);
     console.log(response.data);
@@ -35,6 +35,25 @@ async function loginUser(user, pw) {
     try {
         response = await axios.post(`${baseUrl}/login`,
             { user: user, password: pw },
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
+        console.log(response.data);
+    } catch (e) {
+        return { error: e.message };
+    }
+    return response.data;
+}
+
+async function updateProfile(prof) {
+    console.log(`updating profile: ${JSON.stringify(prof)}`);
+    var response;
+    try {
+        response = await axios.put(`${baseUrl}/users/${prof.id}`,
+            prof,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -64,5 +83,6 @@ module.exports = {
     getStatus,
     getUser,
     loginUser,
-    searchDests
+    searchDests,
+    updateProfile
 }

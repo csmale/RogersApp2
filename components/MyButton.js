@@ -7,7 +7,7 @@ export default function MyButton(props) {
             <Pressable>
                 <Button style={styles.button}
                     title={props.caption}
-                    color="#e79065"
+                    color="#f47c47"
                     onPress={props.onPress}
                 />
             </Pressable>
