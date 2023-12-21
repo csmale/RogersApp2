@@ -4,11 +4,6 @@ import AppContext from '../components/AppContext.js';
 import { useContext, useState } from 'react';
 import MyButton from '../components/MyButton.js';
 
-const olddata = [
-    { id: 'a', pc: 'DA3 8LW', company: 'Bloggs plc', site: 'New Ash Green', unit: 'Shed', lat: 51.3668463, lon: 0.3040738 },
-    { id: 'b', pc: 'DA3 8LX', company: 'Bloggs plc', site: 'Hartley', unit: 'Shed', lat: 51.3837303, lon: 0.304789 },
-    { id: 'c', pc: 'DA3 8LZ', company: 'Bloggs plc', site: 'Longfield', unit: 'Shed', lat: 51.3971018, lon: 0.2929268 }
-];
 /**
  * Data object returned by query:
  * @name    destination
@@ -17,6 +12,7 @@ const olddata = [
  * @member  {string}    company
  * @member  {string}    site
  * @member  {string}    unit
+ * @member  {string}    notes
  * @member  {float} lat
  * @member  {float} lon
  * @member  {float} dist   distance from search location if provided
@@ -45,12 +41,18 @@ function formatDist(m, units) {
 
 export default function ResultsScreen(props) {
     const myContext = useContext(AppContext);
+    const navigation = props.navigation;
     const data = myContext.SearchResults;
 
     console.log(`results screen: ${JSON.stringify(data)}`);
     const myItemSeparator = () => {
         return <View style={{ height: 1, backgroundColor: "grey", marginHorizontal: 10 }} />;
     };
+
+    function addDest() {
+        myContext.setSelectedId(null);
+        navigation.navigate('AddDest');
+    }
 
     const myListEmpty = () => {
         return (
@@ -69,8 +71,9 @@ export default function ResultsScreen(props) {
         myContext.setSelectedUnit(data[index].unit);
         myContext.setSelectedCompany(data[index].company);
         myContext.setSelectedPostcode(data[index].postcode);
+        myContext.setSelectedNotes(data[index].notes);
         //setSelId(index);
-        props.navigation.navigate('DestDetails');
+        navigation.navigate('DestDetails');
     }
 
     const myRenderItem = ({ item, index }) => {
@@ -107,8 +110,9 @@ export default function ResultsScreen(props) {
                 ItemSeparatorComponent={myItemSeparator}
             />
             <Text>{myContext.Profile.company}</Text>
-            <MyButton caption="Select" onPress={() => props.navigation.navigate('DestDetails')} {...props} />
-            <MyButton caption="Search again" onPress={() => props.navigation.navigate('Search')} {...props} />
+            <MyButton caption="Select" onPress={() => navigation.navigate('DestDetails')} />
+            <MyButton caption="Add destination" onPress={addDest} />
+            <MyButton caption="Search again" onPress={() => navigation.navigate('Search')} />
         </View>
     );
 }

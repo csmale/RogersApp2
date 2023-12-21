@@ -1,16 +1,14 @@
 
 import { StyleSheet, View, Text } from "react-native";
 import { Dropdown } from 'react-native-element-dropdown';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 
 export default function MyDropdown(props) {
     const [isFocus, setIsFocus] = useState(false);
 
     return (
         <View style={styles.container}>
-            <View style={{ alignItems: 'left' }}>
-                <Text style={styles.label}>{props.label}</Text>
-            </View>
+            <Text style={styles.label}>{props.label}</Text>
             <Dropdown
                 style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
                 placeholderStyle={styles.placeholderStyle}
@@ -35,20 +33,24 @@ export default function MyDropdown(props) {
 
 const styles = StyleSheet.create({
     container: {
+        flexDirection: "column",
         backgroundColor: '#fff',
         alignItems: 'left',
-        justifyContent: 'left',
-        width: '50%',
-        marginTop: 16
+        alignContent: 'left',
+        width: '70%',
+        marginTop: 16,
+        height: 70,
+        borderColor: 'red',
+        //borderWidth: 1
     },
     dropdown: {
-        height: 30,
-        width: 210,
+        width: 290,
+        flex: 1,
         borderColor: 'gray',
         borderWidth: 0.5,
         borderRadius: 8,
         paddingHorizontal: 8,
-      },
+    },
     input: {
         fontSize: 14,
         fontWeight: "light",
@@ -56,13 +58,18 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1.0
     },
     label: {
+        flex: 1,
         fontSize: 16,
-        fontWeight: "bold"
+        fontWeight: "bold",
+        borderColor: 'blue',
+        //borderWidth: 1,
+        width: 290
     },
     placeholderStyle: {
         fontSize: 16,
     },
     selectedTextStyle: {
+        flex: 1,
         fontSize: 16,
     },
     iconStyle: {

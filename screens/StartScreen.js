@@ -6,9 +6,11 @@ import Password from '../components/Password.js';
 import MyButton from '../components/MyButton.js';
 import ImageButton from '../components/ImageButton.js';
 import AppContext from '../components/AppContext.js';
-import { useContext, useState, useEffect } from 'react';
-import { getStatus, loginUser } from '../components/Backend';
+import { useContext, useState, useEffect, useRef } from 'react';
+import { getStatus, loginUser, resumeSession } from '../components/Backend';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as Device from 'expo-device';
 
 export default function StartScreen(props) {
     const myContext = useContext(AppContext);
@@ -17,6 +19,10 @@ export default function StartScreen(props) {
     const [loginErr, setLoginErr] = useState('');
     const [user, setUser] = useState('');
     const [password, setPassword] = useState('');
+    const session = useRef('');
+    const deviceId = useRef(Device.deviceName);
+    const biometrics = useRef(myContext.UseBiometrics);
+    const canLogin = useRef(false);
 
     function doLogin() {
         setLoginErr('');
@@ -28,7 +34,7 @@ export default function StartScreen(props) {
         }
         let prof;
         void (async () => {
-            prof = await loginUser(uname, pw);
+            prof = await loginUser(uname, pw, deviceId.current);
             if (prof.error) {
                 setLoginErr(prof.error);
                 return;
@@ -36,10 +42,18 @@ export default function StartScreen(props) {
                 myContext.setProfile(prof);
                 try {
                     await AsyncStorage.setItem('username', uname);
-                  } catch (e) {
+                    await AsyncStorage.setItem('session', prof.session_id);
+                    session.current = prof.session_id;
+                    myContext.setSession(prof.session_id);
+                } catch (e) {
                     // saving error
-                  }
-                navigation.navigate('MainNav');
+                }
+                if (prof.must_change_password) {
+                    navigation.navigate('ChangePassword');
+                } else {
+                    myContext.setIsLoggedIn(true);
+                    navigation.replace('MainNav');
+                }
             }
         })();
     }
@@ -53,46 +67,111 @@ export default function StartScreen(props) {
         }, 1000);
         return () => mounted = false;
     }, []);
+
+    /**
+     * Runs every render to check if we need to get a fingerprint
+     */
     useEffect(() => {
         async function getLastUser() {
             try {
-                const value = await AsyncStorage.getItem('username');
-                if (value !== null) {
+                const user = await AsyncStorage.getItem('username');
+                if (user !== null) {
                     // value previously stored
-                    setUser(value);
+                    setUser(user);
                 };
+                const sess = await AsyncStorage.getItem('session');
+                if (sess !== null) {
+                    // value previously stored
+                    console.log(`found previous session: ${sess}`);
+                    session.current = sess;
+                    myContext.setSession(sess);
+                };
+                const bio = (await AsyncStorage.getItem('biometrics')) == "y";
+                // value previously stored
+                biometrics.current = bio;
+                myContext.setUseBiometrics(bio);
+                console.log(`useBiometrics: ${bio} ${myContext.UseBiometrics}`);
             } catch (e) {
+                console.log(e);
                 // error reading value
+            }
+
+            const biohw = await LocalAuthentication.isEnrolledAsync();
+            if (!biohw) {
+                console.log(`No biometric hardware`);
+                myContext.setUseBiometrics(false);
+                biometrics.current = false;
+            };
+            console.log(`useBiometrics: ${biometrics.current} session: ${session.current}`);
+            if (biometrics && session.current) {
+                console.log("want to use biometrics");
+                const results = await LocalAuthentication.authenticateAsync({
+                    cancelLabel: "Cancel",
+                    disableDeviceFallback: false,
+                    fallbackLabel: "Fallback",
+                    promptMessage: "Sign in to GateMaster",
+                    requireConfirmation: true
+                });
+                if (results.success) {
+                    console.log(`success: ${results.success}`);
+                } else if (results.error === 'unknown') {
+                    console.log(results.error);
+                } else if (
+                    results.error === 'user_cancel' ||
+                    results.error === 'system_cancel' ||
+                    results.error === 'app_cancel'
+                ) {
+                    console.log(results.error);
+                }
+
+                if (results.success) {
+                    const prof = await resumeSession(session.current, deviceId.current);
+                    if (prof && !prof.error) {
+                        myContext.setProfile(prof);
+                        if (prof.must_change_password) {
+                            navigation.navigate('ChangePassword');
+                        } else {
+                            myContext.setIsLoggedIn(true);
+                            navigation.replace('MainNav');
+                        }
+                    } else {
+                        setLoginErr('Unable to resume session, please log in again');
+                    }
+                }
             }
         }
         getLastUser();
     }, []);
 
-//        void (async () => {setServerStatus(await getStatus())})();
+    canLogin.current = (user.length > 0 && password.length > 0);
 
+    useEffect(() => {
+        myContext.setDeviceId(Device.deviceName);
+    });
 
-return (
-    <View style={styles.container}>
-        <Image style={styles.image} source={require('../images/splash.jpg')} />
-        <Text style={styles.bigtext}>Welcome to GateMaster</Text>
-        <Text style={styles.text}>Service Status: {serverStatus}</Text>
-        <Text style={styles.text}>Please log in to the application</Text>
-        <MyInput label='User name:' placeholder='username' value={user} inputMode='email' onChangeText={setUser}></MyInput>
-        <Password label='Password:' placeholder='password' value={password} onChangeText={setPassword}></Password>
-        {loginErr != "" &&
-            <Text style={styles.errText}>{loginErr}</Text>
-        }
-        <MyButton caption='Sign in' onPress={doLogin} {...props} />
-        <Text style={styles.text}>Don't have an account yet?&nbsp;&nbsp;
-            <Pressable
-                onPress={() => navigation.navigate('Signup')}>
-                <Text style={styles.signup}>Sign up</Text>
-            </Pressable>
-        </Text>
-        <ImageButton caption='Google' image={require('../images/login_google.png')} onPress={() => navigation.navigate('Main')} {...props} />
-        <ImageButton caption='Twitter' image={require('../images/login_microsoft.png')} onPress={() => navigation.navigate('Main')} {...props} />
-    </View>
-);
+    return (
+        <View style={styles.container}>
+            <Image style={styles.image} source={require('../images/splash.jpg')} />
+            <Text style={styles.bigtext}>Welcome to GateMaster</Text>
+            <Text style={styles.text}>Service Status: {serverStatus}</Text>
+            <Text style={styles.text}>Device Name: {deviceId.current}</Text>
+            <Text style={styles.text}>Please log in to the application</Text>
+            <MyInput label='User name:' placeholder='username' value={user} inputMode='email' onChangeText={setUser}></MyInput>
+            <Password label='Password:' placeholder='password' value={password} onChangeText={setPassword}></Password>
+            {loginErr != "" &&
+                <Text style={styles.errText}>{loginErr}</Text>
+            }
+            <MyButton caption='Sign in' onPress={doLogin} disabled={!canLogin.current} />
+            <Text style={styles.text}>Don't have an account yet?&nbsp;&nbsp;
+                <Pressable
+                    onPress={() => navigation.navigate('Signup')}>
+                    <Text style={styles.signup}>Sign up</Text>
+                </Pressable>
+            </Text>
+            <ImageButton caption='Google' image={require('../images/login_google.png')} onPress={() => navigation.navigate('Main')} />
+            <ImageButton caption='Twitter' image={require('../images/login_microsoft.png')} onPress={() => navigation.navigate('Main')} />
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({

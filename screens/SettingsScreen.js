@@ -1,12 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Switch } from 'react-native';
 import AppContext from '../components/AppContext.js';
 import { useContext, useState } from 'react';
 import MyButton from '../components/MyButton.js';
 import MyInput from '../components/MyInput.js';
 import MyDropdown from '../components/MyDropdown.js';
-import { updateProfile } from '../components/Backend';
+import { updateProfile, logoffUser } from '../components/Backend';
+import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const validateEmail = (email) => {
   return String(email)
@@ -18,16 +20,25 @@ const validateEmail = (email) => {
 
 export default function SettingsScreen(props) {
   const myContext = useContext(AppContext);
+  const navigation = props.navigation;
   const profile = myContext.Profile;
   const [email, setEmail] = useState(profile.email);
   const [displayname, setDisplayname] = useState(profile.displayname);
   const [dunits, setDunits] = useState(profile.distance_units);
   const [company, setCompany] = useState(profile.company);
+  const [biometrics, setBiometrics] = useState(myContext.UseBiometrics);
   const [errTxt, setErrTxt] = useState('');
+  const [bio, setBio] = useState(false);
   const dunitdata = [
     { label: "Miles", value: "mi" },
     { label: "Kilometres", value: "km" }
   ];
+
+  const toggleSwitch = () => setBiometrics(previousState => !previousState);
+
+  LocalAuthentication.hasHardwareAsync().then((data) => {
+    setBio(data);
+  });
 
   async function doSaveSettings() {
     setErrTxt('');
@@ -60,8 +71,29 @@ export default function SettingsScreen(props) {
     if (res.error) {
       setErrTxt(res.error);
     } else {
-      props.navigation.navigate('Main');
+      myContext.setUseBiometrics(biometrics);
+      await AsyncStorage.setItem('biometrics', biometrics ? "y" : "n");
+      navigation.replace('Main');
     }
+  }
+
+  async function doSignOut() {
+    // tell backend
+    const res = await logoffUser(myContext.Session, myContext.DeviceId);
+    if(res == null) {
+      setErrTxt('Unable to sign off');
+      return;
+    }
+    if(res.error) {
+      setErrTxt(res.error);
+      return;
+    }
+    // update context
+    myContext.setIsLoggedIn(false);
+    // clear session in local storage
+    await AsyncStorage.setItem('session', '');
+    // navigate back to startup screen
+    navigation.replace('Start');
   }
 
   return (
@@ -83,8 +115,21 @@ export default function SettingsScreen(props) {
       </View>
       <MyInput label='Email:' placeholder='Your email address' inputMode='email' value={email} onChangeText={setEmail} />
       {errTxt != '' && <Text style={styles.errText}>{errTxt}</Text>}
-      <MyButton caption="Save" onPress={() => doSaveSettings()} {...props} />
-      <MyButton caption="Cancel" onPress={() => props.navigation.navigate('Main')} {...props} />
+      {bio && <View style={styles.switchcontainer}>
+        <Text style={styles.label}>Use Biometric Login:</Text>
+        <Switch
+          style={styles.switch}
+          trackColor={{ false: '#767577', true: '#81b0ff' }}
+          thumbColor={biometrics ? '#f5dd4b' : '#f4f3f4'}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={toggleSwitch}
+          value={biometrics}
+        />
+      </View>}
+      <MyButton caption="Save" onPress={() => doSaveSettings()}  />
+      <MyButton caption="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
+      <MyButton caption="Sign out" onPress={() => doSignOut()} />
+      <MyButton caption="Cancel" onPress={() => navigation.navigate('Main')} />
     </View>
   );
 }
@@ -99,6 +144,7 @@ const styles = StyleSheet.create({
   searchcontainer: {
     backgroundColor: '#fff',
     alignItems: 'left',
+    alignContent: 'left',
     justifyContent: 'left',
   },
   errText: {
@@ -106,4 +152,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "red"
   },
+  switchcontainer: {
+    flexDirection:"row",
+    borderColor: "red",
+    //borderWidth: 1,
+    alignItems: 'center',
+    width: '70%'
+  },
+  label: {
+    flex: 5,
+    fontSize: 16,
+    fontWeight: "bold",
+    borderColor: 'red',
+    //borderWidth: 1
+  },
+  switch: {
+    flex: 1,
+    alignSelf: "right",
+    borderColor: 'blue',
+    borderWidth: 1
+  }
 });

@@ -11,6 +11,25 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with other users.",
+          "cameraPermission": "The app accesses your camera to let you share photos with other users."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
+    ],
+
     "assetBundlePatterns": [
       "**/*"
     ],

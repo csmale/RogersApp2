@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'left',
         justifyContent: 'left',
-        width: '50%',
+        width: '70%',
         marginTop: 8
     },
     input: {

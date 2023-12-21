@@ -1,32 +1,69 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import AppContext from '../components/AppContext.js';
-import { useContext } from 'react';
 import MyButton from '../components/MyButton.js';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { UrlTile, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 export default function DestDetailsScreen(props) {
   const myContext = useContext(AppContext);
+  const [locLatitude, setLocLatitude] = useState(myContext.SelectedLat);
+  const [locLongitude, setLocLongitude] = useState(myContext.SelectedLon);
+
+  const mapType = "google";
+
+  function onRegionChangeComplete(region) {
+    // console.log(`region change: ${JSON.stringify(region)}`);
+    setLocLatitude(region.latitude);
+    setLocLongitude(region.longitude);
+  }
+  function onDragEnd(coordinates) {
+    // console.log(`region change: ${JSON.stringify(region)}`);
+    setLocLatitude(coordinates.latitude);
+    setLocLongitude(coordinates.longitude);
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar></StatusBar>
       <View style={styles.mapcontainer}>
-        <Text>Destination Details {myContext.Profile.displayname}</Text>
-        <Text>{myContext.SelectedCompany}, {myContext.SelectedSite}, {myContext.SelectedPostcode}, {myContext.SelectedUnit}</Text>
+        <Text style={styles.text}>Destination Details {myContext.Profile.displayname}</Text>
+        <Text style={styles.text}>{myContext.SelectedCompany}, {myContext.SelectedSite}, {myContext.SelectedPostcode}, {myContext.SelectedUnit}</Text>
         <MapView
           style={styles.map}
           provider={PROVIDER_GOOGLE}
-          region={{ latitude: myContext.SelectedLat, longitude: myContext.SelectedLon, latitudeDelta: 0.01, longitudeDelta: 0.01 }}
+          initialRegion={{ latitude: locLatitude, longitude: locLongitude, latitudeDelta: 0.01, longitudeDelta: 0.01 }}
+          onRegionChange={(region)=>{onRegionChangeComplete(region)}}
           mapType='hybrid'
         >
+          {mapType == "osm" ?
+            <UrlTile
+              /**
+               * The url template of the tile server. The patterns {x} {y} {z} will be replaced at runtime
+               * For example, https://tile.openstreetmap.org/{z}/{x}/{y}.png
+               */
+              urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+              /**
+               * The maximum zoom level for this tile overlay. Corresponds to the maximumZ setting in
+               * MKTileOverlay. iOS only.
+               */
+              maximumZ={19}
+              /**
+               * flipY allows tiles with inverted y coordinates (origin at bottom left of map)
+               * to be used. Its default value is false.
+               */
+              flipY={false}
+            />
+            : <></>}
           <Marker
             description='destination'
-            coordinate={{ latitude: myContext.SelectedLat, longitude: myContext.SelectedLon }}
+            draggable
+            onDragEnd={({coordinates}) => {onDragEnd(coordinates)}}
+            coordinate={{ latitude: locLatitude, longitude: locLongitude }}
           ></Marker>
         </MapView>
-
+        <Text style={styles.text}>Location: {locLatitude},{locLongitude}</Text>
+        <Text style={styles.text}>Notes: {myContext.SelectedNotes}</Text>
       </View>
       <View style={styles.buttonArea}>
         <MyButton caption="Confirm" onPress={() => props.navigation.navigate('Navigate')} {...props} />
@@ -56,6 +93,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  text: {
+    fontSize: 14
   }
 
 });

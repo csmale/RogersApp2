@@ -23,29 +23,38 @@ Settings: Link to edit user profile
 */
 export default function MainScreen(props) {
   const myContext = useContext(AppContext);
+  const navigation = props.navigation;
 
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [searchLat, setSearchLat] = useState(myContext.SearchLat);
   const [searchLon, setSearchLon] = useState(myContext.SearchLon);
 
+  /**
+   * Runs on each render to update current position
+   */
   useEffect(() => {
-    (async () => {
-
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        return;
+      (async () => {
+      if (myContext.LocationPermissionChecked) {
+        if(!myContext.setLocationPermissionGranted) {
+          return;
+        }
+      } else {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        myContext.setLocationPermissionChecked(true);
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+          return;
+        }
+        myContext.setLocationPermissionGranted(true);
       }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-      // setSearchLat(location.coords.latitude);
-      // setSearchLon(location.coords.longitude);
-      setSearchLat(location.coords.latitude);
-      setSearchLon(location.coords.longitude);
+      let thisloc = await Location.getCurrentPositionAsync({});
+      setLocation(thisloc);
+      setSearchLat(thisloc.coords.latitude);
+      setSearchLon(thisloc.coords.longitude);
     })();
-  },[]);
+  });
 
   let text = 'Waiting..';
   if (errorMsg) {
@@ -54,37 +63,12 @@ export default function MainScreen(props) {
     text = JSON.stringify(location);
   }
 
-  /*
-    if (myContext.SearchLat == 0.0) {
-      GetLocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 60000,
-        rationale: {
-          title: 'Location permission',
-          message: 'The app needs the permission to request your location.',
-          buttonPositive: 'Ok',
-        },
-      })
-        .then(location => {
-          console.log(location);
-          myContext.setSearchLat(location.latitude);
-          myContext.setSearchLon(location.longitude);
-        })
-        .catch(error => {
-          const { code, message } = error;
-          console.warn(code, message);
-          myContext.setSearchLat(0.0);
-          myContext.setSearchLon(0.0);
-        })
-    }
-  */
-    function goSearch() {
-      myContext.setSearchLat(searchLat);
-      myContext.setSearchLon(searchLon);
-      navigation.navigate('Search');
-    }
+  function goSearch() {
+    myContext.setSearchLat(searchLat);
+    myContext.setSearchLon(searchLon);
+    navigation.navigate('Search');
+  }
 
-  const navigation = props.navigation;
   return (
     <View style={styles.container}>
 
@@ -99,7 +83,7 @@ export default function MainScreen(props) {
             longitudeDelta: 0.0121,
           }}
         >
-          <Marker coordinate={{latitude: searchLat, longitude: searchLon}} ></Marker>
+          <Marker coordinate={{ latitude: searchLat, longitude: searchLon }} ></Marker>
         </MapView>
       </View>
       <View style={styles.bottomhalf}>
@@ -107,9 +91,9 @@ export default function MainScreen(props) {
         <Text>Logged in as {myContext.Profile.userid}</Text>
         <Text>{myContext.Profile.company}</Text>
         <Text>Lat: {searchLat} Lon: {searchLon}</Text>
-        <MyButton caption='Destination' onPress={goSearch} {...props} />
-        <MyButton caption='Vehicle' onPress={() => navigation.navigate('VehicleList')} {...props} />
-        <MyButton caption='Settings' onPress={() => navigation.navigate('Settings')} {...props} />
+        <MyButton caption='Destination' onPress={goSearch} />
+        <MyButton caption='Vehicle' onPress={() => navigation.navigate('VehicleList')} />
+        <MyButton caption='Settings' onPress={() => navigation.navigate('Settings')} />
       </View>
     </View>
   );
@@ -125,13 +109,15 @@ const styles = StyleSheet.create({
   },
   mapbox: {
     height: 400,
-    width: 400,
+    width: '100%',
     flex: 1,
     alignItems: 'center',
   },
   bottomhalf: {
     flex: 1,
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   map: {
     ...StyleSheet.absoluteFillObject,

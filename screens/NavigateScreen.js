@@ -8,6 +8,7 @@ import { Linking } from 'react-native';
 
 
 export default function NavigateScreen(props) {
+    const navigation = props.navigation;
     const myContext = useContext(AppContext);
     function LaunchGoogleNavigation() {
         let url = `https://www.google.com/maps/dir/?api=1&destination=${myContext.SelectedLat},${myContext.SelectedLon}`;
@@ -20,12 +21,17 @@ export default function NavigateScreen(props) {
             }
         });
     }
+    function editDest() {
+        navigation.navigate('AddDest');
+    }
     return (
         <View style={styles.container}>
             <Text>Start Navigation</Text>
             <Text>{myContext.Profile.company}</Text>
-            <MyButton caption="Google Maps" onPress={LaunchGoogleNavigation} {...props} />
-            <MyButton caption="Home" onPress={() => props.navigation.navigate('Main')} {...props} />
+            <Text style={styles.text}>Notes: {myContext.SelectedNotes}</Text>
+            {myContext.SelectedId?<MyButton caption="Edit Destination" onPress={editDest} />:<></>}
+            <MyButton caption="Google Maps" onPress={LaunchGoogleNavigation} />
+            <MyButton caption="Home" onPress={() => navigation.navigate('Main')} />
         </View>
     );
 }
@@ -36,5 +42,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    text: {
+        fontSize: 14,
     },
 });
