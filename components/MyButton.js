@@ -1,4 +1,5 @@
 import { StyleSheet, View, Button, Text, Pressable } from "react-native";
+import * as gcolours from '../gcolours';
 
 export default function MyButton(props) {
     const { onPress, caption='Save', disabled=false } = props;
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         borderRadius: 8,
         elevation: 3,
-        backgroundColor: '#f47c47',
+        backgroundColor: gcolours.gm_orange,
         width: '75%',
         marginTop: 16,
     },
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         borderRadius: 8,
         elevation: 3,
-        backgroundColor: '#808080',
+        backgroundColor: gcolours.gm_grey,
         width: '75%',
         marginTop: 16,
     },
