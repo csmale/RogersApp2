@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, Switch } from 'react-native';
+import { StyleSheet, ScrollView, Text, View, Switch } from 'react-native';
 import AppContext from '../components/AppContext.js';
 import { useContext, useState } from 'react';
 import MyButton from '../components/MyButton.js';
@@ -9,6 +9,7 @@ import MyDropdown from '../components/MyDropdown.js';
 import { updateProfile, logoffUser } from '../components/Backend';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 const validateEmail = (email) => {
   return String(email)
@@ -80,11 +81,11 @@ export default function SettingsScreen(props) {
   async function doSignOut() {
     // tell backend
     const res = await logoffUser(myContext.Session, myContext.DeviceId);
-    if(res == null) {
+    if (res == null) {
       setErrTxt('Unable to sign off');
       return;
     }
-    if(res.error) {
+    if (res.error) {
       setErrTxt(res.error);
       return;
     }
@@ -98,38 +99,42 @@ export default function SettingsScreen(props) {
 
   return (
     <View style={styles.container}>
-      <Text>Setting for {profile.username}</Text>
-      <Text>User ID: {profile.userid}</Text>
-      <MyInput label='Company:' placeholder='Your company name' value={company} onChangeText={setCompany} />
-      <MyInput label='Display Name:' placeholder='' value={displayname} onChangeText={setDisplayname} />
-      <View style={styles.searchcontainer}>
-        <MyDropdown
-          label="Distance units:"
-          data={dunitdata}
-          labelField="label"
-          valueField="value"
-          placeholder='Select...'
-          value={dunits}
-          onChange={setDunits} >
-        </MyDropdown>
-      </View>
-      <MyInput label='Email:' placeholder='Your email address' inputMode='email' value={email} onChangeText={setEmail} />
-      {errTxt != '' && <Text style={styles.errText}>{errTxt}</Text>}
-      {bio && <View style={styles.switchcontainer}>
-        <Text style={styles.label}>Use Biometric Login:</Text>
-        <Switch
-          style={styles.switch}
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={biometrics ? '#f5dd4b' : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
-          onValueChange={toggleSwitch}
-          value={biometrics}
-        />
-      </View>}
-      <MyButton caption="Save" onPress={() => doSaveSettings()}  />
-      <MyButton caption="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
-      <MyButton caption="Sign out" onPress={() => doSignOut()} />
-      <MyButton caption="Cancel" onPress={() => navigation.navigate('Main')} />
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.innerContainer}>
+          <Text>Settings for {profile.username}</Text>
+          <Text>User ID: {profile.userid}</Text>
+          <MyInput label='Company:' placeholder='Your company name' value={company} onChangeText={setCompany} />
+          <MyInput label='Display Name:' placeholder='' value={displayname} onChangeText={setDisplayname} />
+          <View style={styles.searchcontainer}>
+            <MyDropdown
+              label="Distance units:"
+              data={dunitdata}
+              labelField="label"
+              valueField="value"
+              placeholder='Select...'
+              value={dunits}
+              onChange={setDunits} >
+            </MyDropdown>
+          </View>
+          <MyInput label='Email:' placeholder='Your email address' inputMode='email' value={email} onChangeText={setEmail} />
+          {errTxt != '' && <Text style={styles.errText}>{errTxt}</Text>}
+          {bio && <View style={styles.switchcontainer}>
+            <Text style={styles.label}>Use Biometric Login:</Text>
+            <Switch
+              style={styles.switch}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
+              thumbColor={biometrics ? '#f5dd4b' : '#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitch}
+              value={biometrics}
+            />
+          </View>}
+          <MyButton caption="Save" onPress={() => doSaveSettings()} />
+          <MyButton caption="Change Password" onPress={() => navigation.navigate('ChangePassword')} />
+          <MyButton caption="Sign out" onPress={() => doSignOut()} />
+          <MyButton caption="Cancel" onPress={() => navigation.navigate('Main')} />
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -140,12 +145,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight,
   },
-  searchcontainer: {
+  scrollView: {
+    width: '100%',
+  },
+  innerContainer: {
     backgroundColor: '#fff',
-    alignItems: 'left',
-    alignContent: 'left',
-    justifyContent: 'left',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errText: {
     fontSize: 14,
@@ -153,7 +161,7 @@ const styles = StyleSheet.create({
     color: "red"
   },
   switchcontainer: {
-    flexDirection:"row",
+    flexDirection: "row",
     borderColor: "red",
     //borderWidth: 1,
     alignItems: 'center',

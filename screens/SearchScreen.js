@@ -7,6 +7,8 @@ import MyButton from '../components/MyButton.js';
 import MyInput from '../components/MyInput.js';
 import MyDropdown from '../components/MyDropdown.js';
 import { searchDests } from '../components/Backend.js';
+import Constants from 'expo-constants';
+import Destination from '../components/Structs.js';
 
 export default function SearchScreen(props) {
   const myContext = useContext(AppContext);
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: StatusBar.currentHeight,
+    paddingTop: Constants.statusBarHeight,
   },
   scrollView: {
     width: '100%',

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useContext, useState } from 'react';
+import {Destination} from '../components/Structs.js';
 
 
 const baseUrl = 'https://gm.colinsmale.eu/api/v1';
@@ -132,6 +133,21 @@ async function searchDests(opts) {
     console.log(`search: ${JSON.stringify(configurationObject)}`);
     const response = await axios(configurationObject);
     console.log(response.data);
+    if(Array.isArray(response.data)) {
+        return response.data.map((a) => {
+            let d = new Destination();
+            d.Id = a.id;
+            d.Company = a.company;
+            d.Postcode = a.postcode;
+            d.Site = a.site;
+            d.Unit = a.unit;
+            d.Notes = a.notes;
+            d.Longitude = a.lon;
+            d.Latitude = a.lat;
+            d.Dist = a.dist;
+            return d;
+        })
+    }
     return response.data;
 }
 
@@ -155,9 +171,19 @@ async function registerUser(prof) {
 
 async function addDest(dest) {
     var response;
+    const data = {
+        id: dest.Id,
+        company: dest.Company,
+        postcode: dest.Postcode,
+        site: dest.Site,
+        unit: dest.Unit,
+        lat: dest.Latitude,
+        lon: dest.Longitude,
+        notes: dest.Notes
+    };
     try {
         response = await axios.post(`${baseUrl}/dests`,
-            dest,
+            data,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -173,9 +199,19 @@ async function addDest(dest) {
 
 async function updateDest(dest) {
     var response;
+    const data = {
+        id: dest.Id,
+        company: dest.Company,
+        postcode: dest.Postcode,
+        site: dest.Site,
+        unit: dest.Unit,
+        lat: dest.Latitude,
+        lon: dest.Longitude,
+        notes: dest.Notes
+    };
     try {
-        response = await axios.put(`${baseUrl}/dests/${dest.id}`,
-            dest,
+        response = await axios.put(`${baseUrl}/dests/${data.id}`,
+            data,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -189,6 +225,23 @@ async function updateDest(dest) {
     return response.data;
 }
 
+async function getW3w(lat, lon) {
+    var response;
+    try {
+        response = await axios.get(`${baseUrl}/w3w?lat=${lat}&lon=${lon}`,
+            {},
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
+        console.log(response.data);
+    } catch (e) {
+        return { error: e.message };
+    }
+    return response.data;
+}
 
 module.exports = {
     getStatus,
@@ -201,5 +254,6 @@ module.exports = {
     updateProfile,
     registerUser,
     addDest,
-    updateDest
+    updateDest,
+    getW3w
 }

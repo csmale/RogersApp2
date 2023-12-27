@@ -9,6 +9,7 @@ import MyInput from '../components/MyInput.js';
 import { addDest, updateDest } from '../components/Backend.js';
 import * as MediaLibrary from 'expo-media-library';
 import * as Location from 'expo-location';
+import { Destination } from '../components/Structs.js';
 
 export default function AddDestScreen(props) {
     const myContext = useContext(AppContext);
@@ -23,6 +24,7 @@ export default function AddDestScreen(props) {
     const [image, setImage] = useState(null);
     const [err, setErr] = useState('');
     const imageDetails = useRef(null);
+    const newDest = myContext.SelectedDest;
 
     useEffect(() => {
         (async () => {
@@ -32,19 +34,21 @@ export default function AddDestScreen(props) {
                 setErr('Permission to access location was denied');
                 return;
             }
-            if (myContext.SelectedId) {
-                setNewCompany(myContext.SelectedCompany);
-                setNewPostcode(myContext.SelectedPostcode);
-                setNewSite(myContext.SelectedSite);
-                setNewUnit(myContext.SelectedUnit);
-                setNewLat(myContext.SelectedLatitude);
-                setNewLon(myContext.SelectedLongitude);
-                setNewNotes(myContext.SelectedNotes);
+
+            // if editing an existing entry, start with current values. otherwise leave as defaults from useState() above
+            if (newDest.Id) {
+                setNewCompany(newDest.Company);
+                setNewPostcode(newDest.Postcode);
+                setNewSite(newDest.Site);
+                setNewUnit(newDest.Unit);
+                setNewLat(newDest.Latitude);
+                setNewLon(newDest.Longitude);
+                setNewNotes(newDest.Notes);
                 navigation.setOptions({ headerTitle: 'Edit' });
             } else {
                 let thisloc = await Location.getCurrentPositionAsync({});
-                myContext.setSearchLat(thisloc.coords.latitude);
-                myContext.setSearchLon(thisloc.coords.longitude);
+                newDest.Longitude = thisloc.coords.longitude;
+                newDest.Latitude = thisloc.coords.latitudel
                 navigation.setOptions({ headerTitle: 'Add' });
             }
         })();
@@ -117,6 +121,13 @@ export default function AddDestScreen(props) {
         }
         setNewPostcode(pc);
         // call backend to store new destination
+        newDest.Company = newCompany;
+        newDest.Postcode = newPostcode;
+        newDest.Unit = newUnit;
+        newDest.Site = newSite;
+        newDest.Notes = newNotes;
+        myContext.setSelectedDest(newDest);
+/*
         const newdest = {
             company: newCompany,
             postcode: pc,
@@ -135,14 +146,14 @@ export default function AddDestScreen(props) {
                 newdest.latitude = myContext.SearchLat;
             }
         }
+*/
 
-        if (myContext.SelectedId) {
-            newdest.id = myContext.SelectedId;
-            console.log(`updating dest: ${JSON.stringify(newdest)}`);
-            var res = updateDest(newdest);
+        if (newDest.Id) {
+            console.log(`updating dest: ${JSON.stringify(newDest)}`);
+            var res = updateDest(newDest);
         } else {
-            console.log(`adding dest: ${JSON.stringify(newdest)}`);
-            var res = addDest(newdest);
+            console.log(`adding dest: ${JSON.stringify(newDest)}`);
+            var res = addDest(newDest);
         }
 
         if (res == null) {

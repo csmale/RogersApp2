@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import AppContext from '../components/AppContext.js';
 import { useContext } from 'react';
 import MyButton from '../components/MyButton.js';
+import Destination from '../components/Structs.js';
 
 export default function EditDestScreen(props) {
   const myContext = useContext(AppContext);

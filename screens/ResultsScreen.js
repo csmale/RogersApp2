@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, FlatList, Pressable } from 'react-native';
 import AppContext from '../components/AppContext.js';
-import { useContext, useState } from 'react';
+import { useContext, useState, useRef } from 'react';
 import MyButton from '../components/MyButton.js';
+import Destination from '../components/Structs.js';
 
 /**
  * Data object returned by query:
@@ -42,7 +43,7 @@ function formatDist(m, units) {
 export default function ResultsScreen(props) {
     const myContext = useContext(AppContext);
     const navigation = props.navigation;
-    const data = myContext.SearchResults;
+    const data = myContext.SearchResults; // Destination[]
 
     console.log(`results screen: ${JSON.stringify(data)}`);
     const myItemSeparator = () => {
@@ -50,7 +51,9 @@ export default function ResultsScreen(props) {
     };
 
     function addDest() {
-        myContext.setSelectedId(null);
+        const sel = myContext.SelectedDest;
+        sel.Id = null;
+        myContext.setSelectedDest(sel);
         navigation.navigate('AddDest');
     }
 
@@ -64,14 +67,18 @@ export default function ResultsScreen(props) {
 
     const doSelect = (index, props) => {
         // copy selected entry to context
-        myContext.setSelectedId(data[index].id);
-        myContext.setSelectedSite(data[index].site);
-        myContext.setSelectedLat(data[index].lat);
-        myContext.setSelectedLon(data[index].lon);
-        myContext.setSelectedUnit(data[index].unit);
-        myContext.setSelectedCompany(data[index].company);
-        myContext.setSelectedPostcode(data[index].postcode);
-        myContext.setSelectedNotes(data[index].notes);
+        console.log(`in doSelect, full data: ${JSON.stringify(data)}`);
+        myContext.setSelectedDest(data[index]);
+/*
+        myContext.setSelectedId(data[index].Id);
+        myContext.setSelectedSite(data[index].Site);
+        myContext.setSelectedLat(data[index].Latitude);
+        myContext.setSelectedLon(data[index].Longitude);
+        myContext.setSelectedUnit(data[index].Unit);
+        myContext.setSelectedCompany(data[index].Company);
+        myContext.setSelectedPostcode(data[index].Postcode);
+        myContext.setSelectedNotes(data[index].Notes);
+*/
         //setSelId(index);
         navigation.navigate('DestDetails');
     }
@@ -81,11 +88,11 @@ export default function ResultsScreen(props) {
             <Pressable
                 onPress={() => doSelect(index, props)}>
                 <View style={styles.result}>
-                    <Text style={styles.company}>{item.company}</Text>
-                    <Text style={styles.postcode}>{item.postcode}</Text>
-                    <Text style={styles.site}>Site: {item.site}</Text>
-                    <Text style={styles.unit}>Unit: {item.unit}</Text>
-                    {item.dist && <Text style={styles.dist}>{formatDist(item.dist, myContext.Profile.distance_units)}</Text>}
+                    <Text style={styles.company}>{item.Company}</Text>
+                    <Text style={styles.postcode}>{item.Postcode}</Text>
+                    <Text style={styles.site}>Site: {item.Site}</Text>
+                    <Text style={styles.unit}>Unit: {item.Unit}</Text>
+                    {item.Dist && <Text style={styles.dist}>{formatDist(item.Dist, myContext.Profile.distance_units)}</Text>}
                 </View>
             </Pressable>
         );
@@ -97,7 +104,7 @@ export default function ResultsScreen(props) {
                 style={styles.list}
                 data={data}
                 renderItem={myRenderItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.Id}
                 ListEmptyComponent={myListEmpty}
                 ListHeaderComponent={() => (
                     <Text style={{ fontSize: 30, textAlign: "center", marginTop: 20, fontWeight: 'bold', textDecorationLine: 'underline' }}>

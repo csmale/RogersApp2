@@ -43,6 +43,17 @@ function StackNavigator() {
   );
 }
 
+function SettingsNavigator() {
+  return (
+    /* Define your stack screens */
+    <Stack.Navigator screenOptions={{
+      headerShown: true,
+    }}>
+      <Stack.Screen name="SettingsStack" component={SettingsScreen} options={{headerTitle:"GateMaster Settings", headerTitleAlign:"center"}} />
+    </Stack.Navigator>
+  );
+}
+
 function TabNavigator() {
   return (
     /* Define your tab screens */
@@ -58,7 +69,7 @@ function TabNavigator() {
           <Ionicons name="home" color={color} size={size} />
         ),
       }} />
-      <Tab.Screen name="Settings" component={SettingsScreen} options={{
+      <Tab.Screen name="Settings" component={SettingsNavigator} options={{
         tabBarLabel: 'Settings',
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="settings" color={color} size={size} />
@@ -95,6 +106,8 @@ export default function App() {
   const [SearchUnit, setSearchUnit] = useState('');
   const [SearchRadius, setSearchRadius] = useState(0);
   const [SearchResults, setSearchResults] = useState({});
+  const [SelectedDest, setSelectedDest] = useState({});
+  /*
   const [SelectedId, setSelectedId] = useState(null);
   const [SelectedLat, setSelectedLat] = useState(0.0);
   const [SelectedLon, setSelectedLon] = useState(0.0);
@@ -103,6 +116,7 @@ export default function App() {
   const [SelectedSite, setSelectedSite] = useState('');
   const [SelectedUnit, setSelectedUnit] = useState('');
   const [SelectedNotes, setSelectedNotes] = useState('');
+  */
   const [UseBiometrics, setUseBiometrics] = useState(false);
   const [LocationPermissionGranted, setLocationPermissionGranted] = useState(false);
   const [LocationPermissionChecked, setLocationPermissionChecked] = useState(false);
@@ -122,6 +136,8 @@ export default function App() {
     SearchUnit, setSearchUnit,
     SearchRadius, setSearchRadius,
     SearchResults, setSearchResults,
+    SelectedDest, setSelectedDest,
+    /*
     SelectedId, setSelectedId,
     SelectedLat, setSelectedLat,
     SelectedLon, setSelectedLon,
@@ -130,6 +146,7 @@ export default function App() {
     SelectedSite, setSelectedSite,
     SelectedUnit, setSelectedUnit,
     SelectedNotes, setSelectedNotes,
+    */
   };
 
   useKeepAwake();

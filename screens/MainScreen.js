@@ -93,7 +93,6 @@ export default function MainScreen(props) {
         <Text>Lat: {searchLat} Lon: {searchLon}</Text>
         <MyButton caption='Destination' onPress={goSearch} />
         <MyButton caption='Vehicle' onPress={() => navigation.navigate('VehicleList')} />
-        <MyButton caption='Settings' onPress={() => navigation.navigate('Settings')} />
       </View>
     </View>
   );
